@@ -1,0 +1,4 @@
+build
+*.ld
+.dep
+
