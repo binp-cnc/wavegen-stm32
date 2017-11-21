@@ -48,14 +48,16 @@ typedef struct {
 
   uint32_t remains;
   uint32_t delay;
-} TimerState ts;
+} TimerState;
+
+static TimerState ts;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
 extern TIM_HandleTypeDef htim3;
 
 /******************************************************************************/
-/*            Cortex-M3 Processor Interruption and Exception Handlers         */
+/*            Cortex-M3 Processor Interruption and Exception Handlers         */ 
 /******************************************************************************/
 
 /**
@@ -202,8 +204,6 @@ void SysTick_Handler(void)
 void TIM3_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM3_IRQn 0 */
-
-  rb_
 
   /* USER CODE END TIM3_IRQn 0 */
   HAL_TIM_IRQHandler(&htim3);

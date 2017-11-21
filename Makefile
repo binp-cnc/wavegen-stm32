@@ -46,6 +46,7 @@ C_SOURCES = \
   Src/stm32f1xx_hal_msp.c \
   Src/stm32f1xx_it.c \
   Src/system_stm32f1xx.c \
+  Src/cmds.c \
   Src/ringbuf.c  
 ASM_SOURCES = \
   SW4STM32/startup_stm32f103xb.s

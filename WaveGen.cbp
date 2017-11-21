@@ -31,6 +31,7 @@
 
 <Unit filename="Inc/stm32f1xx_it.h"/>
 <Unit filename="Inc/main.h"/>
+<Unit filename="Inc/cmds.h"/>
 <Unit filename="Inc/ringbuf.h"/>
 <Unit filename="Inc/stm32f1xx_hal_conf.h"/>
 <Unit filename="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h"/>
@@ -70,6 +71,7 @@
 <Unit filename="Drivers/CMSIS/Include/core_cmFunc.h"/>
 <Unit filename="Inc/stm32f1xx_it.h"/>
 <Unit filename="Inc/main.h"/>
+<Unit filename="Inc/cmds.h"/>
 <Unit filename="Inc/ringbuf.h"/>
 <Unit filename="Inc/stm32f1xx_hal_conf.h"/>
 <Unit filename="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c"><Option compilerVar="CC" /></Unit>
@@ -90,6 +92,7 @@
 <Unit filename="Src/stm32f1xx_hal_msp.c"><Option compilerVar="CC" /></Unit>
 <Unit filename="Src/stm32f1xx_it.c"><Option compilerVar="CC" /></Unit>
 <Unit filename="Src/system_stm32f1xx.c"><Option compilerVar="CC" /></Unit>
+<Unit filename="Src/cmds.c"><Option compilerVar="CC" /></Unit>
 <Unit filename="Src/ringbuf.c"><Option compilerVar="CC" /></Unit>
 <Extensions>
 <envvars />

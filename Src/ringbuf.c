@@ -1,5 +1,7 @@
 #include <ringbuf.h>
 
+#include <stdlib.h>
+
 uint8_t ringbuf_init(RingBuf *rb, uint32_t size) {
 	rb->data = (uint8_t*) malloc(size);
 	if (!rb->data) {

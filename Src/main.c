@@ -69,8 +69,16 @@ static void MX_SPI1_Init(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-#define TIMEOUT 4000 // ms
-#define BUFSIZE 64
+#define TIMEOUT 1000 // ms
+#define BATCH_SIZE 16
+
+// status codes
+#define DEVICE_BUSY        0x00
+#define SPI_ERROR          0x10
+#define SPI_BUSY           0x11
+#define COMMAND_ERROR      0x20
+#define RINGBUF_ERROR      0x30
+#define ALL_OK             0xFF
 
 RingBuf ringbuf;
 
@@ -93,6 +101,17 @@ void blink(uint8_t byte) {
         HAL_Delay(100);
     }
     errf_reset();
+}
+
+uint32_t u32_load(const uint8_t *data) {
+  return (data[0]<<24) | (data[1]<<16) | (data[2]<<8) | data[3];
+}
+
+void u32_store(uint8_t *data, uint32_t val) {
+  data[0] = (val>>24) & 0xFF;
+  data[1] = (val>>16) & 0xFF;
+  data[2] = (val>>8) & 0xFF;
+  data[3] = val & 0xFF;
 }
 /* USER CODE END 0 */
 
@@ -126,9 +145,10 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
   errf_reset();
-  uint8_t buffer[BUFSIZE];
+  uint8_t txbuf[BATCH_SIZE] = {0,ALL_OK,0,0, 0,0,0,0};
+  uint8_t rxbuf[BATCH_SIZE] = {0,0,0,0, 0,0,0,0};
 
-  ringbuf_init(&ringbuf, 0x1000);
+  //ringbuf_init(&ringbuf, 0x1000);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -136,47 +156,61 @@ int main(void)
   while (1)
   {
     HAL_StatusTypeDef st = HAL_OK;
-
-    st = HAL_SPI_Receive(&hspi1, buffer, 1, TIMEOUT);
+    st = HAL_SPI_TransmitReceive(&hspi1, txbuf, rxbuf, BATCH_SIZE, TIMEOUT);
     if (st == HAL_OK) {
-        uint8_t cmd = buffer[0];
-        if (cmd == CMD_NONE) {
-            // do nothing
-        } else if (cmd == CMD_MOVE) {
-            uint8_t l = CMD_MOVE_SIZE;
-            st = HAL_SPI_Receive(&hspi1, buffer + 1, l, TIMEOUT);
-            if (st == HAL_OK) {
-                st = ringbuf_push(&ringbuf, buffer, CMD_MOVE_SIZE + 1);
-                if (st != 0) {
-                    errf_set();
-                    break;
-                }
-            } else if (st == HAL_TIMEOUT) {
-                errf_set();
-                break;
-            } else {
-                errf_set();
-                break;
-            }
-            uint8_t i;
-            for(i = 0; i < l; ++i) {
-                blink(buffer[1+i]);
-            }
-        } else {
-            errf_set();
-            break;
+      //uint8_t cmd = rxbuf[0];
+      /*
+      if (cmd == CMD_NONE) {
+        // do nothing
+      } else if (cmd == CMD_MOVE) {
+        st = ringbuf_push(&ringbuf, rxbuf, CMD_MOVE_SIZE + 1);
+        if (st != 0) {
+          txbuf[0] = RINGBUF_ERROR;
+          errf_set();
+          break;
         }
-    } else if (st == HAL_TIMEOUT) {
-        continue;
-    } else {
+        uint8_t i;
+        for(i = 0; i < 1; ++i) {
+          blink(rxbuf[1+i]);
+        }
+      } else {
+        txbuf[1] = COMMAND_ERROR;
+        txbuf[2] = cmd;
         errf_set();
         break;
+      }
+      */
+      txbuf[4] += 1;
+      //u32_store(txbuf + 4, u32_load(txbuf + 4) + 1);
+    } else if (st == HAL_TIMEOUT) {
+      HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+      continue;
+    } else {
+      /*
+      if (st == HAL_BUSY) {
+        txbuf[1] = SPI_BUSY;
+        errf_set();
+      } else if (st == HAL_ERROR) {
+        txbuf[1] = SPI_ERROR;
+        errf_set();
+      } else {
+        errf_set();
+      }
+      */
+      errf_set();
+      break;
     }
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
 
   }
+  /*
+  while (0) {
+    HAL_SPI_Transmit(&hspi1, txbuf, BATCH_SIZE, 250);
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+  }
+  */
   /* USER CODE END 3 */
 
 }
@@ -237,7 +271,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
